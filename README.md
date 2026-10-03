@@ -51,4 +51,4 @@ This proves behavior only for the owned synthetic SQLite adapter under tested pr
 
 The fixture is deliberately three effects, with a 4 MiB destination-file limit and 100-row observation limit. The broader plan's 1,000-event/100-entity workload has not been implemented or benchmarked. Harness workers are fixed, dependency-free programs, limited to 10 seconds with owned process-group termination on timeout and a 64 KiB captured-output read bound; arbitrary plugins/commands are unsupported. Output is spooled to a temporary file, so this is not a disk quota against malicious workers. OS power-loss, network filesystems, external agents, and cross-host recovery remain untested. No CI workflows are installed or enabled by this increment.
 
-[PLAN.md](PLAN.md) retains the original roadmap. License decision is pending; repository and draft PR remain private, with no public deployment authorized.
+[OPERATOR.md](OPERATOR.md) covers inspection and disposable reset. [PLAN.md](PLAN.md) retains the original roadmap. License decision is pending; repository and draft PR remain private, with no public deployment authorized.

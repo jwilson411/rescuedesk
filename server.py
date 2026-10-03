@@ -8,7 +8,7 @@ import sqlite3
 from rescuedesk import cancel, reconcile, resume
 
 PAGE = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>RescueDesk</title>
-<style>body{font:18px system-ui;background:#101a29;color:#e6edf7;max-width:850px;margin:4rem auto;padding:1rem}button,input{font:inherit;padding:.6rem;margin:.3rem}button:focus-visible,input:focus-visible{outline:3px solid #7cf}pre{white-space:pre-wrap;background:#1c2b41;padding:1rem}label{display:block}small{color:#bbd1ed}</style>
+<style>body{font:18px system-ui;background:#101a29;color:#e6edf7;max-width:850px;margin:4rem auto;padding:1rem}button,input{max-width:100%;box-sizing:border-box;font:inherit;padding:.6rem;margin:.3rem}button:focus-visible,input:focus-visible{outline:3px solid #7cf}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#1c2b41;padding:1rem}label{display:block}small{color:#bbd1ed}</style>
 <h1>RescueDesk</h1><p>Synthetic recovery desk · local v0.1</p><p>Destination evidence determines recovery. UNKNOWN and CONFLICT stop work.</p>
 <label>Session token <input id="token" type="password" autocomplete="off"></label><button id="read">Reconcile actual state</button>
 <pre id="report" role="status" aria-live="polite">Paste the token printed by the local server.</pre>
