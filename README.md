@@ -13,7 +13,7 @@ python3 rescuedesk.py init /tmp/rescuedesk-example
 python3 rescuedesk.py serve /tmp/rescuedesk-example --port 8765
 ```
 
-Open `http://127.0.0.1:8765`, paste the server's per-run session token, then reconcile and explicitly resume the displayed missing effects. Server binds only `127.0.0.1`. Stop with Ctrl-C. Choose a fresh state path if it exists already. Delete only your disposable state directory after stopping its server/worker to remove all run data; no state is uploaded. Token is shown only in the local terminal and never in evidence exports.
+Open `http://127.0.0.1:8765`, paste the server's per-run session token, then reconcile and inspect each effect's explanation before explicitly resuming missing effects. The technical report remains available in a collapsed section. Server binds only `127.0.0.1`. Stop with Ctrl-C. Choose a fresh state path if it exists already. Delete only your disposable state directory after stopping its server/worker to remove all run data; no state is uploaded. Token is shown only in the local terminal and never in evidence exports.
 
 `python3 demo.py` runs a bounded child worker, stops after the second effect commits but before its checkpoint acknowledgement, reconciles in a new process, and starts another process to commit only effect 3. It independently queries SQLite to prove the three expected rows and receipts. It then corrupts the checkpoint and demonstrates UNKNOWN. Temporary state is deleted automatically. `--state /tmp/new-rescuedesk-demo` retains the deliberately corrupt fixture for inspection; it must be a new directory.
 
@@ -42,6 +42,8 @@ The immutable fixture consists of opening, assigning, and resolving a synthetic 
 * Cancellation blocks subsequent resume after acquiring the run lock. It **waits for an active resume batch to finish**; it does not interrupt it, roll back existing effects, or undo commits. UNKNOWN and CONFLICT require inspection; no force/repair button is supplied.
 
 The local desk exposes `GET /api/reconcile`, `POST /api/resume`, and `POST /api/cancel` for one CLI-created run. This intentionally narrows the plan's multi-run API: fixture creation and crash injection remain CLI operations. Tokens, exact Host/Origin checks, no CORS, no external assets, CSP, text-only report rendering, bounded request bodies, and request timeouts protect the single-user loopback boundary.
+
+The report includes descriptive `diagnosis` reason codes and observed evidence booleans. These explain lost acknowledgements, drift and UNKNOWN failures without exposing raw edited content. They do not change status classification, grant resume permission, or authorize repairs. See [OVERNIGHT-DIAGNOSIS.md](OVERNIGHT-DIAGNOSIS.md) for the bounded increment.
 
 ## Verification and limits
 

@@ -10,6 +10,8 @@ import sqlite3
 import sys
 import uuid
 
+from diagnosis import EvidenceUnavailable, observed_diagnosis, unknown_diagnosis
+
 FIXTURE = 'synthetic-ticket-v1'
 SCHEMA = {
     'meta': 'CREATE TABLE meta(run TEXT, schema INTEGER, version INTEGER)',
@@ -55,22 +57,24 @@ def init(root):
 def read_checkpoint(root):
     path = root / 'checkpoint.json'
     if path.stat().st_size > 8192:
-        raise ValueError('oversized checkpoint')
+        raise EvidenceUnavailable('checkpoint_too_large')
     value = json.loads(path.read_text())
     if not isinstance(value, dict) or set(value) != {'run', 'source', 'receipts', 'cancelled'}:
-        raise ValueError('checkpoint shape changed')
-    if not isinstance(value['run'], str) or str(uuid.UUID(value['run'])) != value['run'] or value['source'] != FIXTURE:
-        raise ValueError('run/source unsupported')
+        raise EvidenceUnavailable('checkpoint_invalid')
+    if not isinstance(value['run'], str) or str(uuid.UUID(value['run'])) != value['run']:
+        raise EvidenceUnavailable('checkpoint_invalid')
+    if value['source'] != FIXTURE:
+        raise EvidenceUnavailable('source_changed')
     receipts = value['receipts']
     if type(value['cancelled']) is not bool or receipts not in [list(EFFECTS)[:n] for n in range(4)]:
-        raise ValueError('invalid checkpoint state')
+        raise EvidenceUnavailable('checkpoint_invalid')
     return value
 
 
 def connect(root):
     # mode=rw prevents accidentally creating a missing destination.
     if (root / 'application.sqlite').stat().st_size > 4 * 1024 * 1024:
-        raise ValueError('destination exceeds 4 MiB bound')
+        raise EvidenceUnavailable('destination_too_large')
     db = sqlite3.connect((root / 'application.sqlite').resolve().as_uri() + '?mode=rw', uri=True, timeout=2)
     db.execute('PRAGMA busy_timeout=2000')
     return db
@@ -79,21 +83,21 @@ def connect(root):
 def observe(db, journal):
     schema = db.execute("SELECT name,sql FROM sqlite_master WHERE sql IS NOT NULL").fetchall()
     if dict(schema) != SCHEMA or len(schema) != len(SCHEMA):
-        raise ValueError('destination schema changed')
+        raise EvidenceUnavailable('destination_schema_changed')
     if db.execute('PRAGMA journal_mode').fetchone() != ('delete',):
-        raise ValueError('unsupported journal mode')
+        raise EvidenceUnavailable('destination_journal_changed')
     if db.execute('PRAGMA quick_check').fetchall() != [('ok',)]:
-        raise ValueError('destination integrity failed')
+        raise EvidenceUnavailable('destination_integrity_failed')
     meta = db.execute('SELECT run,schema,version FROM meta').fetchall()
     if len(meta) != 1 or meta[0][0] != journal['run'] or meta[0][1] != 1 or type(meta[0][2]) is not int or meta[0][2] < 0:
-        raise ValueError('unsupported destination identity/schema/version')
+        raise EvidenceUnavailable('destination_identity_changed')
     rows = db.execute('SELECT key,payload FROM effects ORDER BY key LIMIT 101').fetchall()
     receipts = db.execute('SELECT key,payload_hash FROM receipts ORDER BY key LIMIT 101').fetchall()
     if len(rows) > 100 or len(receipts) > 100:
-        raise ValueError('destination exceeds fixture bounds')
+        raise EvidenceUnavailable('destination_bounds')
     actual, ledger = dict(rows), dict(receipts)
     if len(actual) != len(rows) or len(ledger) != len(receipts):
-        raise ValueError('duplicate destination keys')
+        raise EvidenceUnavailable('destination_duplicate_keys')
     statuses = {}
     for key, payload in EFFECTS.items():
         if key in actual and actual[key] == payload and ledger.get(key) == digest(payload):
@@ -116,18 +120,34 @@ def observe(db, journal):
             'cancelled': journal['cancelled'], 'version': meta[0][2],
             'preview': digest([journal, meta, rows, receipts]),
             'allowed': [] if blocked else [k for k in EFFECTS if statuses[k] == 'MISSING'],
-            'blocked': blocked}
+            'blocked': blocked,
+            'diagnosis': observed_diagnosis(statuses, actual, ledger, journal, EFFECTS,
+                                            {key: digest(payload) for key, payload in EFFECTS.items()})}
 
 
 def reconcile(root):
     root = Path(root)
+    stage = 'state'
     try:
-        with locked(root), contextlib.closing(connect(root)) as db:
-            db.execute('BEGIN')
-            return observe(db, read_checkpoint(root))
+        with locked(root):
+            stage = 'checkpoint'
+            journal = read_checkpoint(root)
+            stage = 'destination'
+            with contextlib.closing(connect(root)) as db:
+                db.execute('BEGIN')
+                return observe(db, journal)
     except (OSError, ValueError, TypeError, KeyError, sqlite3.Error) as exc:
+        if isinstance(exc, EvidenceUnavailable):
+            code = exc.code
+        elif stage == 'checkpoint':
+            code = 'checkpoint_unavailable' if isinstance(exc, OSError) else 'checkpoint_invalid'
+        elif stage == 'destination':
+            code = 'destination_unavailable' if isinstance(exc, OSError) else 'destination_unreadable'
+        else:
+            code = 'state_unavailable'
+        diagnosis = unknown_diagnosis(code, EFFECTS)
         return {'statuses': {key: 'UNKNOWN' for key in EFFECTS}, 'allowed': [], 'blocked': True,
-                'diagnostic': f'Cannot prove destination state ({type(exc).__name__}). Inspect local state; no automatic repair.'}
+                'diagnostic': diagnosis['issues'][0], 'diagnosis': diagnosis}
 
 
 def crash_at(selected, boundary, key):
