@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import select
 import signal
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -48,8 +49,16 @@ class ServerTests(unittest.TestCase):
                     self.assertEqual(status, 200)
                     report = json.loads(body)
                     headers = {**auth, 'Content-Type': 'application/json'}
-                    payload = json.dumps({'preview': report['preview'], 'effects': report['allowed']})
+                    payload = json.dumps({'preview': report['preview'], 'effects': ['1']})
                     status, body = request('POST', '/api/resume', payload, headers)
+                    self.assertEqual(status, 200)
+                    partial = json.loads(body)
+                    self.assertEqual(partial['allowed'], ['2', '3'])
+                    with sqlite3.connect(root / 'application.sqlite') as db:
+                        self.assertEqual(db.execute('SELECT key,payload FROM effects').fetchall(), [('1', rd.EFFECTS['1'])])
+                        self.assertEqual(db.execute('SELECT count(*) FROM receipts').fetchone(), (1,))
+                    rest = json.dumps({'preview': partial['preview'], 'effects': ['2', '3']})
+                    status, body = request('POST', '/api/resume', rest, headers)
                     self.assertEqual(status, 200)
                     self.assertEqual(set(json.loads(body)['statuses'].values()), {'VERIFIED'})
                     self.assertEqual(request('POST', '/api/resume', payload, headers)[0], 409)

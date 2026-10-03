@@ -30,3 +30,9 @@ The desk now describes the evidence behind each status. The technical report inc
 - UNKNOWN codes identify unavailable/invalid checkpoint, unsupported source, or unavailable/unreadable/unsupported destination. These are diagnostic categories, not a claim that the underlying cause or safe repair is known.
 
 Diagnosis never grants authority or substitutes for a fresh preview. A cancellation summary takes precedence while preserving each effect's evidence. Reports intentionally omit raw edited values, unexpected keys and raw exception text. Reconcile diagnoses the checkpoint first, so if both checkpoint and destination are unreadable, the checkpoint issue is reported first. First reconciliation after an uncommitted SQLite crash may recover a hot journal; subsequent observations do not rewrite application rows or checkpoint contents.
+
+## Resume one step and inspect it
+
+After reconciliation, the desk defaults to the next missing effect only. Select a longer ordered prefix only when you intend that whole attempt. **Review selected effects** shows the exact names, run and observed version; it does not write application state. **Execute reviewed effects** submits that list against the reviewed preview. Inspect the returned observation before preparing another step.
+
+**Discard plan** removes only the in-memory plan; it does not cancel the run. A new observation, selection change, token edit, cancellation request or error invalidates the prior review. Reloading also discards it. If an execution response is lost, reconcile actual state rather than repeating the old plan. Even a visible reviewed plan can become stale because another process changed the destination; server validation rejects it, and the desk requires fresh reconciliation. The CLI/API remains available with the same explicit prefix/preview contract.

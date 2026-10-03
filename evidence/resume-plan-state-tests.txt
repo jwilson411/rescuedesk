@@ -1,0 +1,11 @@
+PASS preparation and discard never produce an execution request
+PASS only reviewed prefix is requested and each plan is consumed once
+PASS stepwise recovery defaults to next remaining effect
+PASS changing selection invalidates prior plan
+PASS invalid selections cannot fall back to an old plan
+PASS fresh observation invalidates prior review even if unchanged
+PASS cancelled conflict and UNKNOWN reports invalidate all plans
+PASS malformed or noncontiguous allowed selections fail closed
+PASS external report and returned plan mutations do not change prepared request
+PASS error token change or refresh invalidation clears plans
+10 bounded presentation-state tests passed; no browser or network used.

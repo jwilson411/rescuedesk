@@ -8,16 +8,33 @@ import sqlite3
 from rescuedesk import cancel, reconcile, resume
 
 PAGE = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>RescueDesk</title>
-<style>body{font:18px system-ui;background:#101a29;color:#e6edf7;max-width:850px;margin:4rem auto;padding:1rem}button,input{max-width:100%;box-sizing:border-box;font:inherit;padding:.6rem;margin:.3rem}button:focus-visible,input:focus-visible{outline:3px solid #7cf}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#1c2b41;padding:1rem}label{display:block}small{color:#bbd1ed}.effect{background:#1c2b41;padding:1rem;margin:1rem 0;border-radius:.4rem}.effect h2{font-size:1.05rem;margin-top:0}#diagnosis{list-style:none;padding:0}details{margin:1rem 0}</style>
+<style>body{font:18px system-ui;background:#101a29;color:#e6edf7;max-width:850px;margin:4rem auto;padding:1rem}button,input,select{max-width:calc(100% - .6rem);box-sizing:border-box;font:inherit;padding:.6rem;margin:.3rem}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7cf}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#1c2b41;padding:1rem}label{display:block}small{color:#bbd1ed}.effect{background:#1c2b41;padding:1rem;margin:1rem 0;border-radius:.4rem}.effect h2{font-size:1.05rem;margin-top:0}#diagnosis{list-style:none;padding:0}details{margin:1rem 0}fieldset{min-width:0;margin:1rem 0;border:1px solid #7793b6}#plan-summary{overflow-wrap:anywhere}#planned-effects{padding-left:1.5rem}</style>
 <h1>RescueDesk</h1><p>Synthetic recovery desk · local v0.1</p><p>Destination evidence determines recovery. UNKNOWN and CONFLICT stop work.</p>
 <label>Session token <input id="token" type="password" autocomplete="off"></label><button id="read">Reconcile actual state</button>
 <p id="summary" role="status" aria-live="polite">Paste the token printed by the local server.</p>
 <ul id="diagnosis" aria-label="Observed effect evidence"></ul>
 <details><summary>Technical reconciliation report</summary><pre id="report">No observation yet.</pre></details>
-<button id="resume" disabled>Resume displayed missing effects</button><button id="cancel">Cancel future work</button>
+<fieldset><legend>Resume a reviewed portion</legend>
+<label>How far should this attempt go?<select id="scope" disabled><option>No eligible effects</option></select></label>
+<button id="prepare" disabled>Review selected effects</button>
+<section id="plan" hidden aria-label="Prepared recovery plan"><p id="plan-summary" role="status" aria-live="polite"></p><ol id="planned-effects"></ol>
+<p>These are the only effects this attempt will request. The server will reject a stale observation.</p>
+<button id="resume" disabled>Execute reviewed effects</button><button id="discard">Discard plan</button></section></fieldset>
+<button id="cancel">Cancel future work</button>
 <p><small>Cancellation waits for an active resume to finish; it never undoes effects. A stale preview requires reconciliation. Use the CLI crash harness to interrupt the synthetic worker.</small></p>
 <script>
-let preview=null; const report=document.querySelector('#report'), res=document.querySelector('#resume'), summary=document.querySelector('#summary'), list=document.querySelector('#diagnosis');
+/*PLAN_MODULE*/
+const planner=new RecoveryPlan(); let busy=false;
+const report=document.querySelector('#report'), res=document.querySelector('#resume'), summary=document.querySelector('#summary'), list=document.querySelector('#diagnosis'), scope=document.querySelector('#scope'), prepare=document.querySelector('#prepare'), plan=document.querySelector('#plan'), planSummary=document.querySelector('#plan-summary'), planned=document.querySelector('#planned-effects'), read=document.querySelector('#read'), cancel=document.querySelector('#cancel'), token=document.querySelector('#token');
+function controls(){
+ scope.disabled=busy||!planner.canPrepare;prepare.disabled=busy||!planner.canPrepare;
+ read.disabled=busy;cancel.disabled=busy;token.disabled=busy;
+ res.disabled=busy||!planner.prepared;document.querySelector('#discard').disabled=busy;
+}
+function clearPlan(){plan.hidden=true;planSummary.textContent='';planned.replaceChildren();}
+function clearObservation(){planner.invalidate();clearPlan();scope.replaceChildren();const option=document.createElement('option');option.textContent='No eligible effects';scope.append(option);list.replaceChildren();report.textContent='No current observation. Reconcile again.';controls();}
+function choices(){scope.replaceChildren();for(const choice of planner.choices){const option=document.createElement('option');option.value=String(choice.count);option.textContent=choice.count===1?'Next effect only: '+choice.label:'Next '+choice.count+' effects, through: '+choice.label;scope.append(option);}if(!scope.options.length){const option=document.createElement('option');option.textContent='No eligible effects';scope.append(option);}controls();}
+
 function renderDiagnosis(data){
  summary.textContent=data.diagnosis.summary;
  for(const issue of data.diagnosis.issues){const item=document.createElement('li');item.textContent=issue;list.append(item);}
@@ -30,9 +47,21 @@ function renderDiagnosis(data){
   item.append(observed);list.append(item);
  }
 }
-async function call(path, body){res.disabled=true;preview=null;list.replaceChildren();summary.textContent='Reading actual application state…';try{const response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Session-Token':document.querySelector('#token').value,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw Error(data.error);preview=data;report.textContent=JSON.stringify(data,null,2);renderDiagnosis(data);res.disabled=!data.allowed?.length;}catch(e){preview=null;list.replaceChildren();summary.textContent=e.message;report.textContent='No current observation. Reconcile again.';}}
-document.querySelector('#read').onclick=()=>call('/api/reconcile');res.onclick=()=>{if(preview)call('/api/resume',{preview:preview.preview,effects:preview.allowed});};document.querySelector('#cancel').onclick=()=>call('/api/cancel',{});
-</script></html>'''
+async function call(path, body){
+ if(busy)return;busy=true;clearObservation();summary.textContent='Reading actual application state…';
+ try{const response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Session-Token':token.value,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw Error(data.error);report.textContent=JSON.stringify(data,null,2);renderDiagnosis(data);planner.observe(data);choices();}
+ catch(e){clearObservation();summary.textContent=e.message;}
+ finally{busy=false;controls();}
+}
+read.onclick=()=>call('/api/reconcile');
+scope.onchange=()=>{planner.choose(Number(scope.value));clearPlan();controls();};
+prepare.onclick=()=>{const chosen=planner.prepare();if(!chosen)return;planned.replaceChildren();for(const id of chosen.effects){const item=document.createElement('li');item.textContent=RecoveryPlan.labels[id];planned.append(item);}planSummary.textContent='Review '+chosen.effects.length+' effect(s) for run '+chosen.run+' at observed version '+chosen.version+'. No work has been written by preparing this plan.';plan.hidden=false;controls();};
+document.querySelector('#discard').onclick=()=>{planner.discard();clearPlan();controls();};
+res.onclick=()=>{if(busy)return;const request=planner.takeRequest();if(request)call('/api/resume',request);};
+cancel.onclick=()=>call('/api/cancel',{});
+token.oninput=()=>{clearObservation();summary.textContent='Session token changed. Reconcile before preparing work.';};
+
+</script></html>'''.replace('/*PLAN_MODULE*/', Path(__file__).with_name('recovery_plan.js').read_text())
 
 
 def serve(root, port):

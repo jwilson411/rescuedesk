@@ -1,0 +1,39 @@
+{
+  "synthetic": true,
+  "prepare_and_discard_effect_count": 0,
+  "first_browser_execution": [
+    "1"
+  ],
+  "stale_plan_did_not_commit_effect_3": true,
+  "final_rows": [
+    [
+      "1",
+      "Synthetic ticket opened"
+    ],
+    [
+      "2",
+      "Synthetic ticket assigned"
+    ],
+    [
+      "3",
+      "Synthetic ticket resolved"
+    ]
+  ],
+  "receipt_count": 3,
+  "version": 3,
+  "cancelled": true,
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "clientWidth": 390,
+    "scrollWidth": 390
+  },
+  "checks": [
+    "selection change invalidates plan",
+    "token change invalidates observation and plan",
+    "stale submission requires reconciliation",
+    "keyboard final execution",
+    "no duplicate effects"
+  ],
+  "browser": "existing agent-browser isolated namespace with existing Chromium; no downloads"
+}
