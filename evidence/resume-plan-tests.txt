@@ -1,0 +1,24 @@
+test_cancelled_state_retains_evidence_and_no_authority_from_diagnosis (test_diagnosis.DiagnosisTests.test_cancelled_state_retains_evidence_and_no_authority_from_diagnosis) ... ok
+test_corrupt_receipt_and_checkpoint_ahead (test_diagnosis.DiagnosisTests.test_corrupt_receipt_and_checkpoint_ahead) ... ok
+test_dependency_gap_does_not_claim_completion (test_diagnosis.DiagnosisTests.test_dependency_gap_does_not_claim_completion) ... ok
+test_edited_payload_and_unknown_keys_are_not_disclosed (test_diagnosis.DiagnosisTests.test_edited_payload_and_unknown_keys_are_not_disclosed) ... ok
+test_missing_receipt_is_distinct_from_deleted_row (test_diagnosis.DiagnosisTests.test_missing_receipt_is_distinct_from_deleted_row) ... ok
+test_new_process_lost_ack_explains_actual_evidence_without_rewrite (test_diagnosis.DiagnosisTests.test_new_process_lost_ack_explains_actual_evidence_without_rewrite) ... ok
+test_unknown_checkpoint_and_destination_have_safe_separate_diagnoses (test_diagnosis.DiagnosisTests.test_unknown_checkpoint_and_destination_have_safe_separate_diagnoses) ... ok
+test_cancel_before_and_after_commit (test_recovery.RecoveryTests.test_cancel_before_and_after_commit) ... ok
+test_changed_schema_is_unknown (test_recovery.RecoveryTests.test_changed_schema_is_unknown) ... ok
+test_concurrent_resume_has_one_winner (test_recovery.RecoveryTests.test_concurrent_resume_has_one_winner) ... ok
+test_corrupt_checkpoints_and_stale_source (test_recovery.RecoveryTests.test_corrupt_checkpoints_and_stale_source) ... ok
+test_crash_matrix_new_process_recovery_and_no_duplicates (test_recovery.RecoveryTests.test_crash_matrix_new_process_recovery_and_no_duplicates) ... ok
+test_deleted_committed_effect_is_conflict (test_recovery.RecoveryTests.test_deleted_committed_effect_is_conflict) ... ok
+test_missing_corrupt_and_changed_destination (test_recovery.RecoveryTests.test_missing_corrupt_and_changed_destination) ... ok
+test_non_prefix_or_duplicate_selection_rejected (test_recovery.RecoveryTests.test_non_prefix_or_duplicate_selection_rejected) ... ok
+test_same_payload_without_ownership_receipt_is_conflict (test_recovery.RecoveryTests.test_same_payload_without_ownership_receipt_is_conflict) ... ok
+test_stale_preview_and_human_modification (test_recovery.RecoveryTests.test_stale_preview_and_human_modification) ... ok
+test_version_drift_rejects_preview (test_recovery.RecoveryTests.test_version_drift_rejects_preview) ... ok
+test_loopback_auth_origin_and_resume (test_server.ServerTests.test_loopback_auth_origin_and_resume) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 2.091s
+
+OK
