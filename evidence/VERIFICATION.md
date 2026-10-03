@@ -28,6 +28,10 @@ Reset was tested by stopping the owned server, deleting only the named disposabl
 
 ## Mobile correction
 
-Applied overflow-wrap:anywhere to the report and bounded controls to available width. Fresh 390×844 browser smoke with the full preview hash reports document clientWidth=375 and scrollWidth=375 (15px scrollbar), so no horizontal overflow. Sanitized full-page screenshot: browser-mobile.jpg. This follow-up changes CSS and documentation only; recovery runtime remains identical to cca2ebd.
+Applied overflow-wrap:anywhere to the report and bounded controls to available width. Fresh 390×844 browser smoke with the full preview hash reports document clientWidth=375 and scrollWidth=375 (15px scrollbar), so no horizontal overflow. Sanitized viewport screenshot: browser-mobile.jpg (recaptured in the evidence correction below). This follow-up changes CSS and documentation only; recovery runtime remains identical to cca2ebd.
 
 Independent reviewer at /home/ai-bot/Documents/Codex/2026-10-02/task-23/review passed 27 independently scripted recovery/corruption scenarios on cca2ebd. Original NO-GO was for mobile overflow and independently blocked HTTP/browser verification, not a demonstrated recovery safety failure. Final reviewer disposition remains a separate gate.
+
+## Evidence image correction after independent GO
+
+Independent review granted GO for bounded local v0.1 at 71d4295183680e819c5f9ed890675cde09d1e400. Its nonblocking finding identified that the previous full-page export rendered a distorted narrow column. Replaced only the evidence image with an actual sanitized viewport capture, reopened the saved bytes for visual inspection, and verified JPEG decoding with Pillow. The requested browser viewport remains 390×844; the screenshot API returns a 375×812 viewport image. The full preview hash wraps legibly; document widths are375/375 and report widths343/343. Lower page controls are outside this capture. Exact image hash and capture metrics are in browser-mobile-capture.json. No runtime, tests or fixture code changed.

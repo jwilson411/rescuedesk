@@ -1,0 +1,29 @@
+{
+  "reviewed_runtime_commit": "71d4295183680e819c5f9ed890675cde09d1e400",
+  "requested_viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "observed_dom": {
+    "innerWidth": 390,
+    "innerHeight": 844,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "reportClientWidth": 343,
+    "reportScrollWidth": 343
+  },
+  "capture": "actual viewport via getScreenshot; no full-page capture",
+  "image": "evidence/browser-mobile.jpg",
+  "decoded_format": "JPEG",
+  "decoded_dimensions": [
+    375,
+    812
+  ],
+  "sha256": "c6009f7700e2da88c37718d78ed125a979353fc63f4c32ce66dcd8672e0953e9",
+  "sanitized": "session token field cleared before capture; synthetic fixture only",
+  "verification": [
+    "Pillow verify and full decode passed",
+    "saved file bytes reopened and visually inspected; legible normal-width content and wrapped full preview hash"
+  ],
+  "scope": "evidence-only correction; lower page content is outside this viewport image"
+}
