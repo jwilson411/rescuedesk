@@ -1,0 +1,17 @@
+test_cancel_before_and_after_commit (test_recovery.RecoveryTests.test_cancel_before_and_after_commit) ... ok
+test_changed_schema_is_unknown (test_recovery.RecoveryTests.test_changed_schema_is_unknown) ... ok
+test_concurrent_resume_has_one_winner (test_recovery.RecoveryTests.test_concurrent_resume_has_one_winner) ... ok
+test_corrupt_checkpoints_and_stale_source (test_recovery.RecoveryTests.test_corrupt_checkpoints_and_stale_source) ... ok
+test_crash_matrix_new_process_recovery_and_no_duplicates (test_recovery.RecoveryTests.test_crash_matrix_new_process_recovery_and_no_duplicates) ... ok
+test_deleted_committed_effect_is_conflict (test_recovery.RecoveryTests.test_deleted_committed_effect_is_conflict) ... ok
+test_missing_corrupt_and_changed_destination (test_recovery.RecoveryTests.test_missing_corrupt_and_changed_destination) ... ok
+test_non_prefix_or_duplicate_selection_rejected (test_recovery.RecoveryTests.test_non_prefix_or_duplicate_selection_rejected) ... ok
+test_same_payload_without_ownership_receipt_is_conflict (test_recovery.RecoveryTests.test_same_payload_without_ownership_receipt_is_conflict) ... ok
+test_stale_preview_and_human_modification (test_recovery.RecoveryTests.test_stale_preview_and_human_modification) ... ok
+test_version_drift_rejects_preview (test_recovery.RecoveryTests.test_version_drift_rejects_preview) ... ok
+test_loopback_auth_origin_and_resume (test_server.ServerTests.test_loopback_auth_origin_and_resume) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 2.389s
+
+OK

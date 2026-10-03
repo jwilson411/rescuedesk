@@ -1,0 +1,37 @@
+{
+  "synthetic": true,
+  "scenario": "lost acknowledgement at effect 2; new-process reconciliation and resume; corrupt checkpoint",
+  "after_crash": {
+    "1": "VERIFIED",
+    "2": "VERIFIED",
+    "3": "MISSING"
+  },
+  "resumed": [
+    "3"
+  ],
+  "independent_readback": [
+    [
+      "1",
+      "Synthetic ticket opened"
+    ],
+    [
+      "2",
+      "Synthetic ticket assigned"
+    ],
+    [
+      "3",
+      "Synthetic ticket resolved"
+    ]
+  ],
+  "ambiguous": {
+    "statuses": {
+      "1": "UNKNOWN",
+      "2": "UNKNOWN",
+      "3": "UNKNOWN"
+    },
+    "allowed": [],
+    "blocked": true,
+    "diagnostic": "Cannot prove destination state (JSONDecodeError). Inspect local state; no automatic repair."
+  },
+  "elapsed_seconds": 0.1995
+}
