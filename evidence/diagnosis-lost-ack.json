@@ -1,0 +1,77 @@
+{
+  "run": "7071559a-98d1-4005-8e28-582a9d5cd5c8",
+  "synthetic": true,
+  "statuses": {
+    "1": "VERIFIED",
+    "2": "VERIFIED",
+    "3": "MISSING"
+  },
+  "cancelled": false,
+  "version": 2,
+  "preview": "29efe3ef223b97a0d906ae53e034d568f9e72c90066f282059eea5752e194dfd",
+  "allowed": [
+    "3"
+  ],
+  "blocked": false,
+  "diagnosis": {
+    "summary": "Review the observed evidence. Only missing effects are eligible for resume.",
+    "issue_codes": [],
+    "issues": [],
+    "effects": [
+      {
+        "id": "1",
+        "label": "Synthetic ticket opened",
+        "status": "VERIFIED",
+        "reason_codes": [
+          "committed_and_acknowledged"
+        ],
+        "explanations": [
+          "The expected row and ownership receipt match, and the checkpoint acknowledges the effect."
+        ],
+        "evidence": {
+          "row_present": true,
+          "receipt_present": true,
+          "payload_matches": true,
+          "receipt_matches": true,
+          "checkpoint_acknowledged": true
+        }
+      },
+      {
+        "id": "2",
+        "label": "Synthetic ticket assigned",
+        "status": "VERIFIED",
+        "reason_codes": [
+          "checkpoint_acknowledgement_missing"
+        ],
+        "explanations": [
+          "The expected row and ownership receipt prove the effect committed, but the checkpoint has not acknowledged it. Do not repeat this effect."
+        ],
+        "evidence": {
+          "row_present": true,
+          "receipt_present": true,
+          "payload_matches": true,
+          "receipt_matches": true,
+          "checkpoint_acknowledged": false
+        }
+      },
+      {
+        "id": "3",
+        "label": "Synthetic ticket resolved",
+        "status": "MISSING",
+        "reason_codes": [
+          "not_observed"
+        ],
+        "explanations": [
+          "Neither a destination row nor ownership receipt is present, and the checkpoint does not claim completion."
+        ],
+        "evidence": {
+          "row_present": false,
+          "receipt_present": false,
+          "payload_matches": null,
+          "receipt_matches": null,
+          "checkpoint_acknowledged": false
+        }
+      }
+    ]
+  }
+}
